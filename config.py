@@ -48,11 +48,10 @@ DETECTOR_MAX_TOKENS = 400
 
 
 # ─── Scoring (Milestone 4) ───────────────────────────────────────────────────
-# How much each signal counts toward the combined score.
+# Relative importance of each signal in the weighted-average combined score.
 #
-# ⚠️ These are placeholders. Milestone 4 asks you to write your combining rule
-# down BEFORE you code it, and to put the numbers in your README. Whatever you
-# decide, it goes here.
+# The combine function divides by the sum of the weights, so they do not have
+# to add up to exactly 1.
 
 WEIGHT_MODEL_SIGNAL = 0.5
 WEIGHT_STYLE_SIGNAL = 0.5
@@ -74,11 +73,9 @@ WEIGHT_STYLE_SIGNAL = 0.5
 HUMAN_THRESHOLD = 0.35
 AI_THRESHOLD = 0.65
 
-# ⚠️ One thing that catches people out in Milestone 5. A weighted average can
-# only land between its two inputs — so while `style_signal` is still the stub
-# returning 0.5, the combined score can never leave 0.25–0.75 no matter what
-# the model signal says, and the human label needs a model score below 0.20 to
-# be reachable at all.
+# ⚠️ A weighted average can only land between its two inputs. If either signal
+# is temporarily fixed at 0.5 during development, that limits the combined
+# score's reachable range and may make some labels impossible to reach.
 #
 # If a label you can't reach is the problem, the fix is upstream of the
 # thresholds: a style signal that actually varies. `scoring.label_ranges()`

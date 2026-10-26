@@ -67,20 +67,20 @@
 
 ### Signal two — the style signal
 
-**What it measures:** `stylometry.py` is intended to measure the text's surface shape, not its meaning: variation in sentence lengths, vocabulary repetition (type-token ratio), and punctuation. These measures are combined into a 0–1 score, where higher is intended to mean more AI-like.
+**What it measures:** `stylometry.py` measures sentence-length variation and vocabulary repetition (unique words divided by total words). It averages the inverse vocabulary ratio with a normalized inverse sentence-length spread to produce a 0–1 score; higher means more AI-like. Punctuation density is reported as a diagnostic but is not included in the score.
 
 **Why that might differ between human and AI writing:** Generated prose can have relatively even sentence lengths and repeated, conventional vocabulary or punctuation patterns. Human writing often varies more in rhythm and wording. These are tendencies, not reliable rules about individual writers.
 
-**What it can't see:** The style signal cannot understand the content or determine authorship. Editing the surface—adding typos, changing sentence breaks, or inserting a quotation—can change these measurements without changing who wrote the text. Also, vocabulary repetition depends on text length, so comparisons across different lengths can mislead. In this starter, the style measures are still stubs and `style_signal` currently returns a constant `0.5`; this description is the intended design, not a measured result.
+**What it can't see:** The style signal cannot understand the content or determine authorship. Editing the surface—adding typos, changing sentence breaks, or inserting a quotation—can change these measurements without changing who wrote the text. Vocabulary repetition also depends on text length, so comparisons across different lengths can mislead. A submission with fewer than two sentences gets a neutral sentence-spread component.
 
 ### The combining rule
 
 <!-- Write the rule in words, then give the numbers. What happens when the two
      signals disagree? -->
 
-**The rule:**
+**The rule:** Take the weighted average of the model and style scores. When the signals disagree, the average falls between them, treating disagreement as uncertainty rather than letting either signal decide alone.
 
-**The numbers:**
+**The numbers:** `combined_score = (0.5 × model_score + 0.5 × style_score) / (0.5 + 0.5)`. The weights are in `config.py`. The current thresholds are `0.35` for high-confidence human and `0.65` for high-confidence AI; scores between them are unsure.
 
 **Where it lives:** `scoring.py::combine_signals`
 
@@ -89,7 +89,7 @@
 
 **A case where my two signals split, and what my rule does with it:**
 
-
+This sample’s signals disagree: the model score is 0.8077, while the style score is 0.3118. Their equal-weight average is 0.55975 (about 0.56), which falls in the unsure range. The disagreement lowers the result instead of letting the high model score alone trigger an AI label. This may avoid some false accusations, though some AI-written text may also receive an unsure result.
 
 ---
 
@@ -127,7 +127,7 @@
      diagnostics. -->
 
 ```powershell
-$body = '{"text":"This is a sample submission for checking the service. It contains several sentences so the local language model can score it. The request should receive an identifier and be written to the audit log.","creator_id":"readme-sample"}'
+$body = '{"text":"In today\u2019s rapidly evolving world, it is essential to recognize that small actions can have a meaningful impact. By working together and embracing new opportunities, we can create positive change and build a brighter future for everyone.","creator_id":"readme-sample"}'
 Set-Content -Path "$env:TEMP\submit.json" -Encoding ascii -Value $body
 curl.exe -X POST http://127.0.0.1:5000/submit -H "Content-Type: application/json" --data-binary "@$env:TEMP\submit.json"
 ```
@@ -137,15 +137,16 @@ HTTP/1.1 200 OK
 Content-Type: application/json
 
 {
+  "combined_score": 0.62305,
   "confidence": 0.5,
-  "content_id": "4306eeda-e62f-403d-aa64-d21cd65d04c1",
+  "content_id": "8fbf8818-93bc-4017-8326-a56e03390932",
   "guess": "unsure",
   "label": "Placeholder \u2014 final scoring and label are not wired in yet.",
-  "model_score": 0.1862,
-  "style_score": null,
+  "model_score": 0.7066,
+  "style_score": 0.5395,
   "you_sent": {
     "creator_id": "readme-sample",
-    "text_length": 199
+    "text_length": 237
   }
 }
 ```
@@ -153,7 +154,7 @@ Content-Type: application/json
 **An appeal (not implemented yet)**
 
 ```powershell
-$body = '{"content_id":"ebd805c6-7fdc-40f9-b866-b20d798c6cd0","reasoning":"This was a test submission; I am checking the appeal route."}'
+$body = '{"content_id":"8fbf8818-93bc-4017-8326-a56e03390932","reasoning":"This was a test submission; I am checking the appeal route."}'
 Set-Content -Path "$env:TEMP\appeal.json" -Encoding ascii -Value $body
 curl.exe -X POST http://127.0.0.1:5000/appeal -H "Content-Type: application/json" --data-binary "@$env:TEMP\appeal.json"
 ```
@@ -166,7 +167,7 @@ Content-Type: application/json
   "error": "not_implemented",
   "message": "POST /appeal isn't built yet — see the TODO in app.py.",
   "you_sent": {
-    "content_id": "ebd805c6-7fdc-40f9-b866-b20d798c6cd0",
+    "content_id": "8fbf8818-93bc-4017-8326-a56e03390932",
     "reasoning": "This was a test submission; I am checking the appeal route."
   }
 }
@@ -186,15 +187,15 @@ Content-Type: application/json
   "count": 1,
   "entries": [
     {
-      "combined_score": null,
-      "content_id": "ebd805c6-7fdc-40f9-b866-b20d798c6cd0",
+      "combined_score": 0.62305,
+      "content_id": "8fbf8818-93bc-4017-8326-a56e03390932",
       "creator_id": "readme-sample",
       "guess": "unsure",
       "label": "Placeholder \u2014 final scoring and label are not wired in yet.",
-      "model_score": 0.1862,
+      "model_score": 0.7066,
       "status": "decided",
-      "style_score": null,
-      "timestamp": "2026-10-26T20:57:37+00:00"
+      "style_score": 0.5395,
+      "timestamp": "2026-10-26T21:25:34+00:00"
     }
   ]
 }
