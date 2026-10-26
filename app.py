@@ -241,7 +241,7 @@ def submit():
 @app.post("/appeal")
 def appeal():
     """
-    A writer says you got it wrong. ← TODO — Milestone 5
+    Record a writer's appeal against an existing submission.
 
     Expects JSON:
         {"content_id": "...", "reasoning": "..."}
@@ -259,13 +259,46 @@ def appeal():
     wrong accusation and nothing at all.
     """
     payload = request.get_json(silent=True) or {}
+    if not isinstance(payload, dict):
+        return jsonify({
+            "error": "invalid_request",
+            "message": "Request body must be a JSON object.",
+        }), 400
 
-    # TODO: delete this and build the route.
+    content_id = payload.get("content_id")
+    reasoning = payload.get("reasoning")
+    if not isinstance(content_id, str) or not content_id.strip():
+        return jsonify({
+            "error": "invalid_request",
+            "message": "content_id is required and must be a non-empty string.",
+        }), 400
+    if not isinstance(reasoning, str) or not reasoning.strip():
+        return jsonify({
+            "error": "invalid_request",
+            "message": "reasoning is required and must be a non-empty string.",
+        }), 400
+
+    original_entries = audit.entries_for(content_id)
+    decision = next(
+        (entry for entry in original_entries if entry.get("status") == "decided"),
+        None,
+    )
+    if decision is None:
+        return jsonify({
+            "error": "not_found",
+            "message": "No submission found for that content_id.",
+        }), 404
+
+    audit.log_appeal(
+        content_id=content_id,
+        creator_id=decision["creator_id"],
+        reasoning=reasoning.strip(),
+    )
     return jsonify({
-        "error": "not_implemented",
-        "message": "POST /appeal isn't built yet — see the TODO in app.py.",
-        "you_sent": payload,
-    }), 501
+        "content_id": content_id,
+        "status": "under_review",
+        "message": "Your appeal has been recorded for review.",
+    }), 200
 
 
 # ── Already works ─────────────────────────────────────────────────────────────

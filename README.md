@@ -117,7 +117,7 @@ I wanted the message to be clear that the system couldn’t tell, without making
 
 ## Sample Run
 
-<!-- Real terminal requests and responses. The appeal route is still a TODO. -->
+<!-- Real terminal requests and responses. -->
 
 **A submission**
 
@@ -151,32 +151,12 @@ Content-Type: application/json
 }
 ```
 
-**An appeal (not implemented yet)**
+**An appeal**
 
 ```powershell
-$body = '{"content_id":"eba9edc6-122b-4729-94d2-18654881f195","reasoning":"This was a test submission; I am checking the appeal route."}'
+$body = '{"content_id":"eba9edc6-122b-4729-94d2-18654881f195","reasoning":"I wrote this myself and would like the result reviewed."}'
 Set-Content -Path "$env:TEMP\appeal.json" -Encoding ascii -Value $body
 curl.exe -X POST http://127.0.0.1:5000/appeal -H "Content-Type: application/json" --data-binary "@$env:TEMP\appeal.json"
-```
-
-```json
-HTTP/1.1 501 NOT IMPLEMENTED
-Content-Type: application/json
-
-{
-  "error": "not_implemented",
-  "message": "POST /appeal isn't built yet — see the TODO in app.py.",
-  "you_sent": {
-    "content_id": "eba9edc6-122b-4729-94d2-18654881f195",
-    "reasoning": "This was a test submission; I am checking the appeal route."
-  }
-}
-```
-
-**What the log shows afterwards**
-
-```powershell
-curl.exe "http://127.0.0.1:5000/log?limit=3"
 ```
 
 ```json
@@ -184,30 +164,25 @@ HTTP/1.1 200 OK
 Content-Type: application/json
 
 {
-  "count": 3,
+  "content_id": "eba9edc6-122b-4729-94d2-18654881f195",
+  "message": "Your appeal has been recorded for review.",
+  "status": "under_review"
+}
+```
+
+**What the log shows afterwards**
+
+```powershell
+curl.exe "http://127.0.0.1:5000/log?limit=2"
+```
+
+```json
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "count": 2,
   "entries": [
-    {
-      "combined_score": 0.9592499999999999,
-      "content_id": "2edc98b5-0045-4c82-a0ec-0465b8e73030",
-      "creator_id": "label-test-ai",
-      "guess": "ai",
-      "label": "We think this was probably written by AI.",
-      "model_score": 0.9899,
-      "status": "decided",
-      "style_score": 0.9286,
-      "timestamp": "2026-10-26T21:40:29+00:00"
-    },
-    {
-      "combined_score": 0.0553,
-      "content_id": "a8db41e3-c440-4a4b-a127-6aff817865f9",
-      "creator_id": "label-test-human",
-      "guess": "human",
-      "label": "We think this was probably written by a person.",
-      "model_score": 0.0711,
-      "status": "decided",
-      "style_score": 0.0395,
-      "timestamp": "2026-10-26T21:40:41+00:00"
-    },
     {
       "combined_score": 0.62305,
       "content_id": "eba9edc6-122b-4729-94d2-18654881f195",
@@ -218,6 +193,14 @@ Content-Type: application/json
       "status": "decided",
       "style_score": 0.5395,
       "timestamp": "2026-10-26T21:40:47+00:00"
+    },
+    {
+      "content_id": "eba9edc6-122b-4729-94d2-18654881f195",
+      "creator_id": "label-test-unsure",
+      "event": "appeal",
+      "reasoning": "I wrote this myself and would like the result reviewed.",
+      "status": "under_review",
+      "timestamp": "2026-10-26T21:49:15+00:00"
     }
   ]
 }
