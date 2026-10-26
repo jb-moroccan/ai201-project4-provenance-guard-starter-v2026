@@ -46,11 +46,11 @@ Two things worth knowing before you pick numbers:
 
 <!-- Your criterion. It must name a number. -->
 
-
+Across each of the three evaluation trials, no more than 1 of 10 pieces of my own writing is labelled high-confidence AI.
 
 **Why this target:**
 
-
+One false accusation in ten is already serious, but allowing none may be unrealistic for a heuristic detector. I prioritize avoiding accusations against real writers over catching every AI-written submission. The ten test pieces must be writing I actually wrote.
 
 ---
 
@@ -58,11 +58,11 @@ Two things worth knowing before you pick numbers:
 
 <!-- Your criterion. -->
 
-
+In each evaluation trial, the median combined score for at least 5 clearly AI-written samples is at least 0.15 higher than the median combined score for at least 5 pieces of my own writing.
 
 **Why this target:**
 
-
+The detector does not need to classify every individual text correctly to be useful, but the two groups should show a measurable score difference. Comparing medians makes the target less dependent on one unusually high or low score.
 
 ---
 
@@ -70,11 +70,11 @@ Two things worth knowing before you pick numbers:
 
 <!-- Your criterion. -->
 
-
+In each evaluation trial, the calibration set produces at least one high-confidence human label, one unsure label, and one high-confidence AI label.
 
 **Why this target:**
 
-
+All three outcomes need to be reachable for the labels to communicate different levels of uncertainty. I use a calibration set with examples I judge clearly human, genuinely borderline, and clearly AI-written.
 
 ---
 
@@ -82,11 +82,11 @@ Two things worth knowing before you pick numbers:
 
 <!-- Your criterion. -->
 
-
+For 3 of 3 appeals submitted with a valid existing `content_id`, the service responds with HTTP 200 and `status: "under_review"`, and the audit log contains an appeal entry for that content.
 
 **Why this target:**
 
-
+An appeal is the writer's path to challenge a mistaken result. The response confirms that it was accepted, while the audit entry provides a record that can be checked later.
 
 ---
 
@@ -94,11 +94,11 @@ Two things worth knowing before you pick numbers:
 
 <!-- Your criterion. -->
 
-
+In each evaluation trial, requests with missing, empty, non-string, or more than 10,000 characters of `text` return HTTP 400 with a JSON error and do not create a scored decision in the audit log.
 
 **Why this target:**
 
-
+Malformed or oversized submissions should fail clearly rather than crash the service or receive a misleading authorship label. A 10,000-character limit gives the service a plainly testable boundary; rejected requests should not look like completed decisions.
 
 ---
 
