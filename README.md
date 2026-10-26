@@ -39,7 +39,13 @@
 <!-- The path a submission takes, from arriving to the label a reader sees.
      Six or seven steps — this is the trace you wrote in Milestone 1. -->
 
-
+1. A writer sends text and a `creator_id` to the service's `POST /submit` route.
+2. The route reads the request and assigns the submission a `content_id` so the decision can be found later.
+3. The model signal measures how predictable the text is to the local language model and produces a `model_score`.
+4. The style signal measures features such as sentence-length variation, vocabulary repetition, and punctuation, producing a `style_score`. It measures the text's shape, not what it means.
+5. The combining rule turns the two signal scores into one `combined_score`. If the signals disagree, the rule determines how much that disagreement affects the result.
+6. The label mapping turns the combined score into a guess and a reader-facing label: high-confidence human, unsure, or high-confidence AI.
+7. The route writes the decision and its scores to the audit log, then returns the content ID, scores, guess, and label to the caller.
 
 ---
 
@@ -53,35 +59,35 @@
 
 ### Signal one — the model signal
 
-**What it measures:**
+**What it measures:** `detector.py` uses a local GPT-2 language model to estimate how predictable the text is, then converts that perplexity into a score from 0 to 1. A higher score means the text is more predictable to the model and is treated as more AI-like.
 
-**Why that might differ between human and AI writing:**
+**Why that might differ between human and AI writing:** A language model tends to choose likely next words, so generated text may be comparatively predictable. Human writing can be less predictable because of unusual wording, specific details, or abrupt changes in direction.
 
-**What it can't see:**
+**What it can't see:** Predictability does not prove who wrote the text. Plain, conventional human writing, including writing by English learners or people deliberately using simple language, can also be predictable. Conversely, unusual or ornate AI text may be less predictable. This signal cannot establish authorship or understand the writer's process.
 
 ### Signal two — the style signal
 
-**What it measures:**
+**What it measures:** `stylometry.py` is intended to measure the text's surface shape, not its meaning: variation in sentence lengths, vocabulary repetition (type-token ratio), and punctuation. These measures are combined into a 0–1 score, where higher is intended to mean more AI-like.
 
-**Why that might differ between human and AI writing:**
+**Why that might differ between human and AI writing:** Generated prose can have relatively even sentence lengths and repeated, conventional vocabulary or punctuation patterns. Human writing often varies more in rhythm and wording. These are tendencies, not reliable rules about individual writers.
 
-**What it can't see:**
+**What it can't see:** The style signal cannot understand the content or determine authorship. Editing the surface—adding typos, changing sentence breaks, or inserting a quotation—can change these measurements without changing who wrote the text. Also, vocabulary repetition depends on text length, so comparisons across different lengths can mislead. In this starter, the style measures are still stubs and `style_signal` currently returns a constant `0.5`; this description is the intended design, not a measured result.
 
 ### The combining rule
 
 <!-- Write the rule in words, then give the numbers. What happens when the two
      signals disagree? -->
 
-**The rule:**
+**The rule:** Take the arithmetic mean of the model and style scores, giving each signal equal weight. Because both scores use the same direction, a disagreement pulls the result toward the middle rather than letting either signal decide alone. A middle result means uncertainty, not proof that the text is human or AI.
 
-**The numbers:**
+**The numbers:** `combined_score = (0.5 × model_score) + (0.5 × style_score)`. The current weights are in `config.py` as `WEIGHT_MODEL_SIGNAL = 0.5` and `WEIGHT_STYLE_SIGNAL = 0.5`. The current label thresholds are `0.35` for human and `0.65` for AI.
 
 **Where it lives:** `scoring.py::combine_signals`
 
 <!-- ⚠️ The grader checks your code against that line. If your rule lives
      somewhere else, say where. -->
 
-**A case where my two signals split, and what my rule does with it:**
+**A case where my two signals split, and what my rule does with it:** If the model score is `0.9` and the style score is `0.1`, the equal-weight average is `0.5`. That falls between `0.35` and `0.65`, so the result is unsure. The disagreement lowers confidence instead of allowing either signal to make a high-confidence accusation on its own.
 
 
 
