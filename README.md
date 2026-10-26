@@ -78,16 +78,16 @@
 <!-- Write the rule in words, then give the numbers. What happens when the two
      signals disagree? -->
 
-**The rule:** Take the arithmetic mean of the model and style scores, giving each signal equal weight. Because both scores use the same direction, a disagreement pulls the result toward the middle rather than letting either signal decide alone. A middle result means uncertainty, not proof that the text is human or AI.
+**The rule:**
 
-**The numbers:** `combined_score = (0.5 × model_score) + (0.5 × style_score)`. The current weights are in `config.py` as `WEIGHT_MODEL_SIGNAL = 0.5` and `WEIGHT_STYLE_SIGNAL = 0.5`. The current label thresholds are `0.35` for human and `0.65` for AI.
+**The numbers:**
 
 **Where it lives:** `scoring.py::combine_signals`
 
 <!-- ⚠️ The grader checks your code against that line. If your rule lives
      somewhere else, say where. -->
 
-**A case where my two signals split, and what my rule does with it:** If the model score is `0.9` and the style score is `0.1`, the equal-weight average is `0.5`. That falls between `0.35` and `0.65`, so the result is unsure. The disagreement lowers confidence instead of allowing either signal to make a high-confidence accusation on its own.
+**A case where my two signals split, and what my rule does with it:**
 
 
 
@@ -127,9 +127,9 @@
      diagnostics. -->
 
 ```powershell
-$submitFile = Join-Path $env:TEMP 'provenance-guard-submit-sample.json'
-Set-Content -Path $submitFile -Encoding ascii -Value '{"text":"This is a sample submission for checking the service. It contains several sentences so the local language model can score it. The request should receive an identifier and be written to the audit log.","creator_id":"readme-sample"}'
-curl.exe -sS -i -X POST http://127.0.0.1:5000/submit -H "Content-Type: application/json" --data-binary "@$submitFile"
+$body = '{"text":"This is a sample submission for checking the service. It contains several sentences so the local language model can score it. The request should receive an identifier and be written to the audit log.","creator_id":"readme-sample"}'
+Set-Content -Path "$env:TEMP\submit.json" -Encoding ascii -Value $body
+curl.exe -X POST http://127.0.0.1:5000/submit -H "Content-Type: application/json" --data-binary "@$env:TEMP\submit.json"
 ```
 
 ```json
@@ -138,7 +138,7 @@ Content-Type: application/json
 
 {
   "confidence": 0.5,
-  "content_id": "ee9ef17f-d84c-4193-a779-d90930aa4348",
+  "content_id": "4306eeda-e62f-403d-aa64-d21cd65d04c1",
   "guess": "unsure",
   "label": "Placeholder \u2014 final scoring and label are not wired in yet.",
   "model_score": 0.1862,
@@ -153,9 +153,9 @@ Content-Type: application/json
 **An appeal (not implemented yet)**
 
 ```powershell
-$appealFile = Join-Path $env:TEMP 'provenance-guard-appeal-sample.json'
-Set-Content -Path $appealFile -Encoding ascii -Value '{"content_id":"ee9ef17f-d84c-4193-a779-d90930aa4348","reasoning":"This was a test submission; I am checking the appeal route."}'
-curl.exe -sS -i -X POST http://127.0.0.1:5000/appeal -H "Content-Type: application/json" --data-binary "@$appealFile"
+$body = '{"content_id":"ebd805c6-7fdc-40f9-b866-b20d798c6cd0","reasoning":"This was a test submission; I am checking the appeal route."}'
+Set-Content -Path "$env:TEMP\appeal.json" -Encoding ascii -Value $body
+curl.exe -X POST http://127.0.0.1:5000/appeal -H "Content-Type: application/json" --data-binary "@$env:TEMP\appeal.json"
 ```
 
 ```json
@@ -166,7 +166,7 @@ Content-Type: application/json
   "error": "not_implemented",
   "message": "POST /appeal isn't built yet — see the TODO in app.py.",
   "you_sent": {
-    "content_id": "ee9ef17f-d84c-4193-a779-d90930aa4348",
+    "content_id": "ebd805c6-7fdc-40f9-b866-b20d798c6cd0",
     "reasoning": "This was a test submission; I am checking the appeal route."
   }
 }
@@ -175,7 +175,7 @@ Content-Type: application/json
 **What the log shows afterwards**
 
 ```powershell
-curl.exe -sS -i "http://127.0.0.1:5000/log?limit=1"
+curl.exe "http://127.0.0.1:5000/log?limit=1"
 ```
 
 ```json
@@ -187,14 +187,14 @@ Content-Type: application/json
   "entries": [
     {
       "combined_score": null,
-      "content_id": "ee9ef17f-d84c-4193-a779-d90930aa4348",
+      "content_id": "ebd805c6-7fdc-40f9-b866-b20d798c6cd0",
       "creator_id": "readme-sample",
       "guess": "unsure",
       "label": "Placeholder \u2014 final scoring and label are not wired in yet.",
       "model_score": 0.1862,
       "status": "decided",
       "style_score": null,
-      "timestamp": "2026-10-26T20:49:12+00:00"
+      "timestamp": "2026-10-26T20:57:37+00:00"
     }
   ]
 }
