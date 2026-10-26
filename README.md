@@ -212,15 +212,15 @@ Content-Type: application/json
 
 **Moment 1**
 
-- *What I asked for:*
-- *What came back:*
-- *What I changed:*
+- *What I asked for:* Help building the style signal and combining it with the model signal.
+- *What came back:* A style score based on sentence-length variation and vocabulary repetition, plus an equal-weight average for combining both scores.
+- *What I changed:* I replaced the generic disagreement example with my actual signal scores, 0.8077 and 0.3118, and explained why their average falls in the unsure range.
 
 **Moment 2**
 
-- *What I asked for:*
-- *What came back:*
-- *What I changed:*
+- *What I asked for:* Help writing the `curl` requests for the sample run.
+- *What came back:* The first commands worked, but included extra setup that made them harder to follow.
+- *What I changed:* I asked for simpler, shorter commands, closer to the examples in the project description.
 
 <!-- ═══════════════════════ UNIT 8 — THE TEST ═══════════════════════ -->
 
