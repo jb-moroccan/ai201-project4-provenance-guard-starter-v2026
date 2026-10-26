@@ -102,16 +102,16 @@ This sample’s signals disagree: the model score is 0.8077, while the style sco
 
 | Label | Score range | The exact text a reader sees |
 |---|---|---|
-| high-confidence human |  |  |
-| unsure |  |  |
-| high-confidence AI |  |  |
+| high-confidence human | 0.00–0.35 | We think this was probably written by a person. |
+| unsure | above 0.35 and below 0.65 | We couldn’t tell from this sample. It may well have been written by a person, and this result isn’t a judgment about your work. |
+| high-confidence AI | 0.65–1.00 | We think this was probably written by AI. |
 
 **Why I worded the "unsure" one this way:**
 <!-- It's the hardest of the three. It has to admit uncertainty without
      sounding like an accusation, because the person reading it may well have
      written every word themselves. -->
 
-
+I wanted the message to be clear that the system couldn’t tell, without making the writer feel blamed for an uncertain result.
 
 ---
 
@@ -127,7 +127,7 @@ This sample’s signals disagree: the model score is 0.8077, while the style sco
      diagnostics. -->
 
 ```powershell
-$body = '{"text":"In today\u2019s rapidly evolving world, it is essential to recognize that small actions can have a meaningful impact. By working together and embracing new opportunities, we can create positive change and build a brighter future for everyone.","creator_id":"readme-sample"}'
+$body = '{"text":"In today\u2019s rapidly evolving world, it is essential to recognize that small actions can have a meaningful impact. By working together and embracing new opportunities, we can create positive change and build a brighter future for everyone.","creator_id":"label-test-unsure"}'
 Set-Content -Path "$env:TEMP\submit.json" -Encoding ascii -Value $body
 curl.exe -X POST http://127.0.0.1:5000/submit -H "Content-Type: application/json" --data-binary "@$env:TEMP\submit.json"
 ```
@@ -139,13 +139,13 @@ Content-Type: application/json
 {
   "combined_score": 0.62305,
   "confidence": 0.5,
-  "content_id": "8fbf8818-93bc-4017-8326-a56e03390932",
+  "content_id": "eba9edc6-122b-4729-94d2-18654881f195",
   "guess": "unsure",
-  "label": "Placeholder \u2014 final scoring and label are not wired in yet.",
+  "label": "We couldn\u2019t tell from this sample. It may well have been written by a person, and this result isn\u2019t a judgment about your work.",
   "model_score": 0.7066,
   "style_score": 0.5395,
   "you_sent": {
-    "creator_id": "readme-sample",
+    "creator_id": "label-test-unsure",
     "text_length": 237
   }
 }
@@ -154,7 +154,7 @@ Content-Type: application/json
 **An appeal (not implemented yet)**
 
 ```powershell
-$body = '{"content_id":"8fbf8818-93bc-4017-8326-a56e03390932","reasoning":"This was a test submission; I am checking the appeal route."}'
+$body = '{"content_id":"eba9edc6-122b-4729-94d2-18654881f195","reasoning":"This was a test submission; I am checking the appeal route."}'
 Set-Content -Path "$env:TEMP\appeal.json" -Encoding ascii -Value $body
 curl.exe -X POST http://127.0.0.1:5000/appeal -H "Content-Type: application/json" --data-binary "@$env:TEMP\appeal.json"
 ```
@@ -167,7 +167,7 @@ Content-Type: application/json
   "error": "not_implemented",
   "message": "POST /appeal isn't built yet — see the TODO in app.py.",
   "you_sent": {
-    "content_id": "8fbf8818-93bc-4017-8326-a56e03390932",
+    "content_id": "eba9edc6-122b-4729-94d2-18654881f195",
     "reasoning": "This was a test submission; I am checking the appeal route."
   }
 }
@@ -176,7 +176,7 @@ Content-Type: application/json
 **What the log shows afterwards**
 
 ```powershell
-curl.exe "http://127.0.0.1:5000/log?limit=1"
+curl.exe "http://127.0.0.1:5000/log?limit=3"
 ```
 
 ```json
@@ -184,18 +184,40 @@ HTTP/1.1 200 OK
 Content-Type: application/json
 
 {
-  "count": 1,
+  "count": 3,
   "entries": [
     {
+      "combined_score": 0.9592499999999999,
+      "content_id": "2edc98b5-0045-4c82-a0ec-0465b8e73030",
+      "creator_id": "label-test-ai",
+      "guess": "ai",
+      "label": "We think this was probably written by AI.",
+      "model_score": 0.9899,
+      "status": "decided",
+      "style_score": 0.9286,
+      "timestamp": "2026-10-26T21:40:29+00:00"
+    },
+    {
+      "combined_score": 0.0553,
+      "content_id": "a8db41e3-c440-4a4b-a127-6aff817865f9",
+      "creator_id": "label-test-human",
+      "guess": "human",
+      "label": "We think this was probably written by a person.",
+      "model_score": 0.0711,
+      "status": "decided",
+      "style_score": 0.0395,
+      "timestamp": "2026-10-26T21:40:41+00:00"
+    },
+    {
       "combined_score": 0.62305,
-      "content_id": "8fbf8818-93bc-4017-8326-a56e03390932",
-      "creator_id": "readme-sample",
+      "content_id": "eba9edc6-122b-4729-94d2-18654881f195",
+      "creator_id": "label-test-unsure",
       "guess": "unsure",
-      "label": "Placeholder \u2014 final scoring and label are not wired in yet.",
+      "label": "We couldn\u2019t tell from this sample. It may well have been written by a person, and this result isn\u2019t a judgment about your work.",
       "model_score": 0.7066,
       "status": "decided",
       "style_score": 0.5395,
-      "timestamp": "2026-10-26T21:25:34+00:00"
+      "timestamp": "2026-10-26T21:40:47+00:00"
     }
   ]
 }

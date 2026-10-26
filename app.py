@@ -209,8 +209,7 @@ def submit():
     model_score = detector.model_signal(text)
     style_score = stylometry.style_signal(text)
     combined_score = scoring.combine_signals(model_score, style_score)
-    guess = "unsure"
-    label = "Placeholder — final scoring and label are not wired in yet."
+    guess, label = scoring.score_to_label(combined_score)
     confidence = 0.5
 
     audit.log_decision(
