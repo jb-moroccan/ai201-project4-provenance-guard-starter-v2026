@@ -117,8 +117,7 @@
 
 ## Sample Run
 
-<!-- One submission and one appeal, pasted as text: the request, the response,
-     and the log entries. -->
+<!-- Real terminal requests and responses. The appeal route is still a TODO. -->
 
 **A submission**
 
@@ -127,36 +126,78 @@
      two off the response, so leaving them out costs you next unit's
      diagnostics. -->
 
-```bash
-$ curl -X POST http://127.0.0.1:5000/submit \
-  -H "Content-Type: application/json" \
-  -d '{"text": "...", "creator_id": "..."}'
+```powershell
+$submitFile = Join-Path $env:TEMP 'provenance-guard-submit-sample.json'
+Set-Content -Path $submitFile -Encoding ascii -Value '{"text":"This is a sample submission for checking the service. It contains several sentences so the local language model can score it. The request should receive an identifier and be written to the audit log.","creator_id":"readme-sample"}'
+curl.exe -sS -i -X POST http://127.0.0.1:5000/submit -H "Content-Type: application/json" --data-binary "@$submitFile"
 ```
 
 ```json
+HTTP/1.1 200 OK
+Content-Type: application/json
 
+{
+  "confidence": 0.5,
+  "content_id": "ee9ef17f-d84c-4193-a779-d90930aa4348",
+  "guess": "unsure",
+  "label": "Placeholder \u2014 final scoring and label are not wired in yet.",
+  "model_score": 0.1862,
+  "style_score": null,
+  "you_sent": {
+    "creator_id": "readme-sample",
+    "text_length": 199
+  }
+}
 ```
 
-**An appeal**
+**An appeal (not implemented yet)**
 
-```bash
-$ curl -X POST http://127.0.0.1:5000/appeal \
-  -H "Content-Type: application/json" \
-  -d '{"content_id": "...", "reasoning": "..."}'
+```powershell
+$appealFile = Join-Path $env:TEMP 'provenance-guard-appeal-sample.json'
+Set-Content -Path $appealFile -Encoding ascii -Value '{"content_id":"ee9ef17f-d84c-4193-a779-d90930aa4348","reasoning":"This was a test submission; I am checking the appeal route."}'
+curl.exe -sS -i -X POST http://127.0.0.1:5000/appeal -H "Content-Type: application/json" --data-binary "@$appealFile"
 ```
 
 ```json
+HTTP/1.1 501 NOT IMPLEMENTED
+Content-Type: application/json
 
+{
+  "error": "not_implemented",
+  "message": "POST /appeal isn't built yet — see the TODO in app.py.",
+  "you_sent": {
+    "content_id": "ee9ef17f-d84c-4193-a779-d90930aa4348",
+    "reasoning": "This was a test submission; I am checking the appeal route."
+  }
+}
 ```
 
 **What the log shows afterwards**
 
-```bash
-$ curl "http://127.0.0.1:5000/log?limit=3"
+```powershell
+curl.exe -sS -i "http://127.0.0.1:5000/log?limit=1"
 ```
 
 ```json
+HTTP/1.1 200 OK
+Content-Type: application/json
 
+{
+  "count": 1,
+  "entries": [
+    {
+      "combined_score": null,
+      "content_id": "ee9ef17f-d84c-4193-a779-d90930aa4348",
+      "creator_id": "readme-sample",
+      "guess": "unsure",
+      "label": "Placeholder \u2014 final scoring and label are not wired in yet.",
+      "model_score": 0.1862,
+      "status": "decided",
+      "style_score": null,
+      "timestamp": "2026-10-26T20:49:12+00:00"
+    }
+  ]
+}
 ```
 
 ---
