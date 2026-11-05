@@ -228,7 +228,7 @@ Content-Type: application/json
 
 ## Rate Limiting
 
-**My limits:** ___ per minute, ___ per day
+**My limits:** 5 per minute, 50 per day
 
 **Why those numbers and not others:**
 <!-- Think about two people: a real writer submitting their own work a few
@@ -236,17 +236,64 @@ Content-Type: application/json
      thresholds. Your numbers have to be liveable for the first and hostile to
      the second. -->
 
+Five submissions per minute allows a writer to make a few quick corrections
+without making them wait after every request, while slowing a rapid burst of
+automated probing. The daily limit of 50 leaves room for legitimate work over
+the day but puts a ceiling on sustained requests from the same caller. These
+limits are a practical starting point, not a guarantee: a shared caller ID can
+affect multiple people, and someone able to change IDs may avoid the limit.
+
 **What a caller counts as:** <!-- per address, or per creator_id? They fail
 differently — one script can look like a thousand callers, and one household
 can look like one. -->
 
+Requests are limited per `creator_id` when one is
+provided. If it is missing or invalid, the service uses the caller's IP
+address. This keeps callers with different IDs separate, but also means a
+script that changes IDs can get around the limit, while people sharing one ID
+can count against each other.
+
 **The run of status codes when I pushed past it:**
+
+15 submissions as `flood_tester` produced 5 successful responses and 10 rate
+limit rejections.
 
 <!-- python run_attacks.py --flood 15 -->
 
 ```
+  [ 1/15] 200
+  [ 2/15] 200
+  [ 3/15] 200
+  [ 4/15] 200
+  [ 5/15] 200
+  [ 6/15] 429
+  [ 7/15] 429
+  [ 8/15] 429
+  [ 9/15] 429
+  [10/15] 429
+  [11/15] 429
+  [12/15] 429
+  [13/15] 429
+  [14/15] 429
+  [15/15] 429
 
+============================================================
+200 200 200 200 200 429 429 429 429 429 429 429 429 429 429
+============================================================
 ```
+
+**Checking the rejections in the audit log (PowerShell):**
+
+`GET /log` is a web endpoint, not a command to type by itself. With the app
+running, call it with `curl.exe` and count the rejected entries:
+
+```powershell
+curl.exe "http://127.0.0.1:5000/log?limit=15"
+```
+
+The response contains ten entries with `"event": "rejected"` and
+`"reason": "rate_limited"`, confirming that all ten `429` responses were
+recorded.
 
 ---
 
