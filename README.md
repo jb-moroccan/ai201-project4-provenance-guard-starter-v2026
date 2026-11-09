@@ -893,22 +893,96 @@ submission.
 
 ## The Improvement
 
-**What I changed:**
+**What I changed:** I added input checks to `app.py::submit` before either
+scoring signal runs. Missing, empty (including whitespace-only), and
+non-string `text` values now receive an HTTP 400 JSON error. Each is recorded
+as a rejected audit entry, not a scored decision. I did not add a text-length
+limit.
 
-**Which diagnosis pointed at it:**
+**Which diagnosis pointed at it:** Criterion 5 failed at the route/input-
+validation stage because `/submit` passed malformed text to the signals. I
+validate the request before calling them.
 
 ### Attack Run — After
 
 <!-- Same format. `run_attacks.py --label after` -->
 
-
+| ID | Family | Targeting | Status | Content ID | Guess | Score | Verdict |
+|---|---|---|---|---|---|---|---|
+| EV01 | evasion | signal two: typos raise word variety | 200 | `d9940965-62ea-4d2d-9a74-678ca4660e89` | human | 0.500 |  |
+| EV02 | evasion | signal two: broken-up sentences raise length spread | 200 | `a8fd0356-2598-48e3-bab3-bdd71ea2befc` | human | 0.500 |  |
+| EV03 | evasion | signal two: a pasted quotation changes the shape | 200 | `aa9eb21c-9879-4b21-9fd1-d40d3a6e5729` | unsure | 0.500 |  |
+| EV04 | evasion | signal one: unusual words raise perplexity | 200 | `fc17034c-3340-41a3-954a-ffa85f2cbcfa` | unsure | 0.500 |  |
+| EV05 | evasion | both signals: heavy human editing pass | 200 | `cf77a947-98f7-4cdf-9a81-933cd2b2b8e3` | human | 0.500 |  |
+| EV06 | evasion | signal two: one very long sentence and one very short | 200 | `2646bc98-8312-4dc6-b5bb-42e9bfa1b648` | human | 0.500 |  |
+| EV07 | evasion | signal two: padding with punctuation | 200 | `a83f35d3-aff1-44b2-a0ad-ea87e580ff71` | unsure | 0.500 |  |
+| EV08 | evasion | signal one: text below the token window | 200 | `5a780dee-d3e9-4256-a5a2-2f1633a7a0a0` | human | 0.500 |  |
+| EV09 | evasion | both: AI text with a human opening paragraph bolted on | 200 | `220da3ff-8fd0-415a-ba6e-904b9d21c80f` | unsure | 0.500 |  |
+| EV10 | evasion | signal two: repeated stanza structure | 200 | `605b979f-08af-4771-8d44-83aec6d9dfcb` | ai | 0.500 |  |
+| FP01 | false_positive | plain, clear human writing with no flourishes | 200 | `7e580a41-351b-4c81-b594-56c7a0c34b99` | unsure | 0.500 |  |
+| FP02 | false_positive | human writing in a formal register | 200 | `b94cdc47-7773-4fe8-9138-1807165198aa` | unsure | 0.500 |  |
+| FP03 | false_positive | a non-native English speaker writing carefully | 200 | `daf43b52-46a4-48be-b949-0b4a8695ff21` | unsure | 0.500 |  |
+| FP04 | false_positive | a student essay written to a rubric | 200 | `2daf6f8f-9116-4e63-b74b-64a3d20e8239` | unsure | 0.500 |  |
+| FP05 | false_positive | technical documentation written by a person | 200 | `847435c7-ee4e-422a-b3e2-18909675a929` | ai | 0.500 |  |
+| FP06 | false_positive | a person imitating a formal template | 200 | `2f82a0d2-5d7d-4aca-bb5c-b369050e66d4` | unsure | 0.500 |  |
+| FP07 | false_positive | human writing that repeats a phrase deliberately | 200 | `3987c95f-664c-4f13-8237-e2c130ef089d` | unsure | 0.500 |  |
+| FP08 | false_positive | very short genuine human submission | 200 | `37f8cb28-ff69-40f7-9430-606595088c9b` | human | 0.500 |  |
+| PI01 | prompt_injection | instruction to ignore the check | 200 | `62f6c178-53cc-40d1-8572-bdefc9104e2e` | human | 0.500 |  |
+| PI02 | prompt_injection | instruction disguised as a system message | 200 | `46c8a367-7a3c-47b1-93e5-4a3e970e8215` | human | 0.500 |  |
+| PI03 | prompt_injection | instruction wrapped in the writer's voice | 200 | `a0aeb000-97d5-47dc-b4be-2e7ebbf3b972` | unsure | 0.500 |  |
+| PI04 | prompt_injection | attempt to make the label text hostile | 200 | `d03bdddd-1fa9-45c4-a599-c18ffd5f662f` | unsure | 0.500 |  |
+| PI05 | prompt_injection | attempt to inject into the audit log | 200 | `62dd8aa0-6973-40d3-9890-78805e750d8a` | unsure | 0.500 |  |
+| PI06 | prompt_injection | instruction plus real human text | 200 | `de277add-ebf0-4d93-a923-530c9a65d2a7` | unsure | 0.500 |  |
+| MF01 | malformed | text is only whitespace | 400 | `—` | — | — |  |
+| MF02 | malformed | text is a single character | 500 | `—` | — | — | BROKE |
+| MF03 | malformed | text is control characters | 200 | `53c2e33a-5ea3-477a-ba94-04414325ba40` | human | 0.500 |  |
+| MF04 | malformed | text is only punctuation | 200 | `492c130d-1a05-4e57-8d8f-6d850e4240f3` | human | 0.500 |  |
+| MF05 | malformed | text is a very long single word | 200 | `20fc3caa-8cb3-45b0-8f3e-8c1bfd2fc7ea` | unsure | 0.500 |  |
+| MF06 | malformed | text is emoji only | 200 | `f6654b52-0fd8-4ab4-a592-353be3da986b` | ai | 0.500 |  |
+| MF07 | malformed | text is right-to-left script | 200 | `abf9586f-59a7-496b-9d32-740142092bdd` | ai | 0.500 |  |
+| MF08 | malformed | text is 60,000 characters | 200 | `2e958db0-e883-4bd6-ae3a-2affefff44aa` | ai | 0.500 |  |
+| RQ01 | malformed | no text field at all | 400 | `—` | — | — |  |
+| RQ02 | malformed | no creator_id | 200 | `d7c80e69-fa09-4db7-a17a-815aa608b168` | human | 0.500 |  |
+| RQ03 | malformed | text is a number | 400 | `—` | — | — |  |
+| RQ04 | malformed | text is a list | 400 | `—` | — | — |  |
+| RQ05 | malformed | text is null | 400 | `—` | — | — |  |
+| RQ06 | malformed | creator_id is an object | 200 | `4d7aba7a-f6e0-4e9e-98af-ff56f63a3757` | human | 0.500 |  |
+| RQ07 | malformed | body is a JSON array, not an object | 400 | `—` | — | — |  |
+| RQ08 | malformed | body is unparseable JSON | 400 | `—` | — | — |  |
+| RQ09 | malformed | body is empty | 400 | `—` | — | — |  |
+| RQ10 | malformed | body is form-encoded, not JSON | 429 | `—` | — | — |  |
+| RQ11 | malformed | body is JSON claiming to be plain text | 429 | `—` | — | — |  |
+| RQ12 | malformed | deeply nested JSON | 400 | `—` | — | — |  |
+| FL01_01 | flood_same_creator | 20 rapid submissions from one creator | 200 | `614b7a96-2788-4f6e-8579-b81f886a67c1` | human | 0.500 |  |
+| FL01_02 | flood_same_creator | 20 rapid submissions from one creator | 200 | `c8d04541-2434-4a69-b4a6-1853675a55b7` | human | 0.500 |  |
+| FL01_03 | flood_same_creator | 20 rapid submissions from one creator | 200 | `10d3f007-f44d-4ed4-8615-38066556a31e` | human | 0.500 |  |
+| FL01_04 | flood_same_creator | 20 rapid submissions from one creator | 200 | `b7081683-d486-4a53-986e-38d3334dc78b` | human | 0.500 |  |
+| FL01_05 | flood_same_creator | 20 rapid submissions from one creator | 200 | `17a041c8-2490-48a9-a739-bd5c5068ac41` | human | 0.500 |  |
+| FL01_06 | flood_same_creator | 20 rapid submissions from one creator | 429 | `—` | — | — |  |
+| FL01_07 | flood_same_creator | 20 rapid submissions from one creator | 429 | `—` | — | — |  |
+| FL01_08 | flood_same_creator | 20 rapid submissions from one creator | 429 | `—` | — | — |  |
+| FL01_09 | flood_same_creator | 20 rapid submissions from one creator | 429 | `—` | — | — |  |
+| FL01_10 | flood_same_creator | 20 rapid submissions from one creator | 429 | `—` | — | — |  |
+| FL01_11 | flood_same_creator | 20 rapid submissions from one creator | 429 | `—` | — | — |  |
+| FL01_12 | flood_same_creator | 20 rapid submissions from one creator | 429 | `—` | — | — |  |
 
 **Did it help, and how do I know:**
 
-<!-- Widening the unsure band usually fixes one problem and creates another.
-     Reporting that trade honestly is worth full credit. -->
+Yes, it fixed the missing, empty, and non-string input cases: the
+`run_2026-11-09_1815_after.md` report shows HTTP 400 for all three in each
+trial, while the 10,001-character input still returned HTTP 200. A focused
+route test also confirmed the three 400 responses contain JSON errors, are
+logged as rejections without score fields, and do not call either scoring
+signal. The improvement helped, but criterion 5 remains MISSED overall because
+the oversized input is still accepted.
 
-
+| Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
+|---|---|---|---|---|---|
+| 1. ten pieces of my own writing | ≤ 1 of 10 | 0/10 | 0/10 | 0/10 | MET |
+| 2. score spread: my writing followed by AI-written comparisons | AI median ≥ own median + 0.15 | 0.3412 gap | 0.3412 gap | 0.3412 gap | MET |
+| 3. label coverage calibration | 3 of 3 | 3/3 | 3/3 | 3/3 | MET |
+| 4. appeal_input | 3 of 3 appeals | 3/3 | 3/3 | 3/3 | MET |
+| 5. invalid and oversized text inputs | 4 of 4 | 3/4 | 3/4 | 3/4 | MISSED |
 
 ---
 
@@ -917,44 +991,63 @@ submission.
 <!-- For each attack still getting through and each criterion still missed:
      what you'd do, and why you stopped. -->
 
+The after attack run still shows several classification failures: the evasion
+cases EV01, EV02, EV05, EV06, and EV08 returned `human` for AI-written text;
+PI01 and PI02 also returned `human` for the prompt-injection test texts; and
+FP05, technical documentation written by a person, returned `ai`. These show
+that surface edits can move AI text below the human threshold, while predictable
+human technical writing can move above the AI threshold. The paired signals and
+their weighted average do not reliably establish authorship.
 
+Two input failures also remain. MF02, a one-character submission, returned
+HTTP 500 because the route accepts any non-empty string and the detector
+requires enough tokens to score it. Criterion 5 is still missed because the
+10,001-character submission returns HTTP 200 and is recorded as a scored
+decision; I deliberately left the size limit unchanged. I would add a
+minimum-length guard or handle the detector's short-input error, and add the
+requested maximum-length check, but stopped after the requested malformed
+input fix rather than expanding its scope.
 
 **The trade I'd make if this ran for real:**
 
 <!-- Two sentences. Fewer wrong accusations means more AI text getting through.
      Say which way you'd go and WHO PAYS FOR IT. -->
 
+I would favor avoiding false accusations: uncertain cases should stay `unsure`
+instead of being called AI, even if that lets more AI-written text pass. Writers
+whose AI-written work is not detected would pay that cost, while human writers
+would be less likely to face a false accusation.
 
 
 <!-- ═════════════════════════════════════════════════════════════════════
 
      SUBMISSION CHECKLIST — unit 7
 
-       [ ] criteria.md has five numbered criteria, each naming a target
-       [ ] Each has a reason underneath
-       [ ] POST /submit returns content_id, guess, confidence, label,
+       [X] criteria.md has five numbered criteria, each naming a target
+       [X] Each has a reason underneath
+       [X] POST /submit returns content_id, guess, confidence, label,
            model_score and style_score
-       [ ] Two signals that measure DIFFERENT things, each with a named blind spot
-       [ ] Three label variants, all reachable, written out in full
-       [ ] POST /appeal changes status and writes to the log
-       [ ] Signals and Scoring names scoring.py::combine_signals
-       [ ] Sample Run: a submission AND an appeal, as pasted text
-       [ ] At least four new commits
-       [ ] Repository URL submitted — WRITE IT DOWN
+       [X] Two signals that measure DIFFERENT things, each with a named blind spot
+       [X] Three label variants, all reachable, written out in full
+       [X] POST /appeal changes status and writes to the log
+       [X] Signals and Scoring names scoring.py::combine_signals
+       [X] Sample Run: a submission AND an appeal, as pasted text
+       [X] At least four new commits
+       [X] Repository URL submitted — WRITE IT DOWN
 
      SUBMISSION CHECKLIST — unit 8
 
-       [ ] Rate limiting on /submit, with your numbers justified
-       [ ] The pasted run of status codes showing 429
-       [ ] Audit log with all nine fields, recording rejections too
-       [ ] The attack set run IN FULL, every input with an outcome
-       [ ] Ten audit log entries pasted as text
-       [ ] Five criteria across three trials
-       [ ] A diagnosis for every miss and every broken attack — stage AND mechanism
-       [ ] One improvement, with Attack Run — After
-       [ ] What's Still Broken, including the production trade
-       [ ] At least four new commits
-       [ ] The SAME repository URL as last unit
+       [X] Rate limiting on /submit, with your numbers justified
+       [X] The pasted run of status codes showing 429
+       [X] Audit log with all nine fields, recording rejections too
+       [X] The attack set run IN FULL, every input with an outcome
+       [X] Ten audit log entries pasted as text
+       [X] Five criteria across three trials
+       [X] A diagnosis for every miss and every broken attack — stage AND mechanism
+       [X] One improvement, with Attack Run — After
+       [X] What's Still Broken, including the production trade
+       [X] At least four new commits
+       [X] The SAME repository URL as last unit
 
      Do not delete and recreate this repository.
      ═════════════════════════════════════════════════════════════════════ -->
