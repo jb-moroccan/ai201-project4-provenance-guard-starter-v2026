@@ -991,22 +991,50 @@ the oversized input is still accepted.
 <!-- For each attack still getting through and each criterion still missed:
      what you'd do, and why you stopped. -->
 
-The after attack run still shows several classification failures: the evasion
-cases EV01, EV02, EV05, EV06, and EV08 returned `human` for AI-written text;
-PI01 and PI02 also returned `human` for the prompt-injection test texts; and
-FP05, technical documentation written by a person, returned `ai`. These show
-that surface edits can move AI text below the human threshold, while predictable
-human technical writing can move above the AI threshold. The paired signals and
-their weighted average do not reliably establish authorship.
+The classification failures occur in the **signal-scoring and decision
+stages**, not because the route is assigning labels directly. The equal-weight
+average in `scoring.py::combine_signals` lets a manipulated or weak signal pull
+the result across the `0.35` human threshold:
 
-Two input failures also remain. MF02, a one-character submission, returned
-HTTP 500 because the route accepts any non-empty string and the detector
-requires enough tokens to score it. Criterion 5 is still missed because the
-10,001-character submission returns HTTP 200 and is recorded as a scored
-decision; I deliberately left the size limit unchanged. I would add a
-minimum-length guard or handle the detector's short-input error, and add the
-requested maximum-length check, but stopped after the requested malformed
-input fix rather than expanding its scope.
+- **EV01** is driven humanward by the model signal: typos make the AI-written
+  text less predictable, producing a low model score (`0.1635`) despite a
+  higher style score (`0.4575`); the average is `0.3105`. **EV05** changes both
+  signals through heavy editing (`0.3212` model, `0.1657` style; average
+  `0.24345`), so neither signal retains enough evidence of generated text.
+- **EV02** and **EV06** show the style signal's evasion mechanism: sentence
+  restructuring produces very low style scores (`0.0879` and `0.125`) that
+  outweigh moderately AI-like model scores (`0.5943` and `0.5727`) in the
+  equal-weight average. Their combined scores (`0.3411` and `0.34885`) fall
+  just below the human threshold. **EV08** is only a short sample, but the
+  route applies no minimum-evidence rule: the model score is `0.2452`, style
+  score `0.3114`, and average `0.2783`, so weak short-text evidence is labeled
+  human rather than treated as inconclusive.
+- **PI01** and **PI02** are also signal-scoring failures, not instructions
+  successfully changing control flow. The service does not pass submissions
+  to an instruction-following prompt; both signals score the injected text as
+  ordinary prose. Its predictable wording and simple/repetitive shape produce
+  low style scores (`0.0916` and `0.0877`); combined with model scores of
+  `0.4625` and `0.2044`, the averages (`0.27705` and `0.14605`) are labeled
+  human. Neither signal detects or discounts the embedded classification
+  instruction.
+- **FP05** fails in the opposite direction at model-signal calibration and
+  thresholding. Formulaic technical prose receives a high model score
+  (`0.8005`), already above the AI threshold; the style score (`0.5226`) is
+  near neutral and does not offset it enough. Their average, `0.66155`, still
+  crosses the `0.65` threshold and falsely labels a human writer's work as AI.
+
+Across these cases, the mechanism is that surface features and predictability
+are imperfect authorship proxies, and the weighted average has no mechanism
+for recognizing when evidence is weak or adversarially shifted.
+
+Two failures remain at the **route/input-validation stage**. **MF02**, a
+one-character submission, returned HTTP 500 because the route accepts any
+non-empty string, then the detector raises `ValueError` when it has fewer than
+three tokens; the route does not catch that short-input failure and return a
+client error. Criterion 5 is still missed because the 10,001-character
+submission returns HTTP 200 and is recorded as a scored decision: the route
+has no maximum-length check. I deliberately left the minimum-length handling
+and size limit unchanged after fixing the other malformed-input cases.
 
 **The trade I'd make if this ran for real:**
 
