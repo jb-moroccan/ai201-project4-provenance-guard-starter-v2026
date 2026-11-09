@@ -510,17 +510,371 @@ requests because a writer could be wrongly judged based on their writing style.
 
 | Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
 |---|---|---|---|---|---|
-| 1.  |  |  |  |  |  |
-| 2.  |  |  |  |  |  |
-| 3.  |  |  |  |  |  |
-| 4.  |  |  |  |  |  |
-| 5.  |  |  |  |  |  |
+| 1. ten pieces of my own writing | ≤ 1 of 10 | 0/10 | 0/10 | 0/10 | MET |
+| 2. score spread: my writing followed by AI-written comparisons | 0/5 | 2/5 | 2/5 | 2/5 | MISSED |
+| 3. label coverage calibration | 3 of 3 | 3/3 | 3/3 | 3/3 | MET |
+| 4. appeal_input | 3 of 3 | 3/3 | 3/3 | 3/3 | MET |
+| 5. invalid and oversized text inputs | 4 of 4 | 3/4 | 3/4 | 3/4 | MISSED |
 
-**Real output from one trial**, pasted as text, naming the file and function
-that produced it:
+**Trial 1 results for all five criteria**
+
+Criteria 1-3 and 5 below are copied from `results/run_2026-11-09_1729_before.md`. That report records response status and JSON, but does not capture raw HTTP headers. The three criterion 4 appeal responses include their HTTP status and Content-Type headers.
+
+**Criterion 1 - my own writing - Trial 1**
 
 ```json
+[
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5,
+    "model_score": 0.533,
+    "style_score": 0.2608,
+    "label": "We couldn\u2019t tell from this sample. It may well have been written by a person, and this result isn\u2019t a judgment about your work.",
+    "sent": "Mr. Franklin\u2019s complaints about his parents may be somewhat unfair and"
+  },
+  {
+    "status": 200,
+    "guess": "human",
+    "confidence": 0.5,
+    "model_score": 0.3047,
+    "style_score": 0.2217,
+    "label": "We think this was probably written by a person.",
+    "sent": "Peer influence could have affected Mr. Franklin\u2019s traits he\u2019s experien"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5,
+    "model_score": 0.7078,
+    "style_score": 0.2,
+    "label": "We couldn\u2019t tell from this sample. It may well have been written by a person, and this result isn\u2019t a judgment about your work.",
+    "sent": "Since Mr. Franklin did not receive enough attention from his mother, h"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5,
+    "model_score": 0.7028,
+    "style_score": 0.429,
+    "label": "We couldn\u2019t tell from this sample. It may well have been written by a person, and this result isn\u2019t a judgment about your work.",
+    "sent": "Gender differences in both social connectedness and aggression are inf"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5,
+    "model_score": 0.6518,
+    "style_score": 0.4283,
+    "label": "We couldn\u2019t tell from this sample. It may well have been written by a person, and this result isn\u2019t a judgment about your work.",
+    "sent": "Social connectedness affects gender differences through nature and nur"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5,
+    "model_score": 0.6864,
+    "style_score": 0.52,
+    "label": "We couldn\u2019t tell from this sample. It may well have been written by a person, and this result isn\u2019t a judgment about your work.",
+    "sent": "To reduce current gender differences in aggression, I would place chil"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5,
+    "model_score": 0.3407,
+    "style_score": 0.3775,
+    "label": "We couldn\u2019t tell from this sample. It may well have been written by a person, and this result isn\u2019t a judgment about your work.",
+    "sent": "The board member\u2019s proposal to use subliminal persuasion should be rej"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5,
+    "model_score": 0.7407,
+    "style_score": 0.5451,
+    "label": "We couldn\u2019t tell from this sample. It may well have been written by a person, and this result isn\u2019t a judgment about your work.",
+    "sent": "Anthony Greenwald performed an experiment where he randomly assigned s"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5,
+    "model_score": 0.5535,
+    "style_score": 0.3777,
+    "label": "We couldn\u2019t tell from this sample. It may well have been written by a person, and this result isn\u2019t a judgment about your work.",
+    "sent": "Based on the results of this study, the board member\u2019s plan should be "
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5,
+    "model_score": 0.7872,
+    "style_score": 0.4531,
+    "label": "We couldn\u2019t tell from this sample. It may well have been written by a person, and this result isn\u2019t a judgment about your work.",
+    "sent": "While the five human senses have individual functions, they are not to"
+  }
+]
+```
 
+**Criterion 2 - score spread - Trial 1**
+
+```json
+[
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5,
+    "model_score": 0.533,
+    "style_score": 0.2608,
+    "label": "We couldn\u2019t tell from this sample. It may well have been written by a person, and this result isn\u2019t a judgment about your work.",
+    "sent": "Mr. Franklin\u2019s complaints about his parents may be somewhat unfair and"
+  },
+  {
+    "status": 200,
+    "guess": "human",
+    "confidence": 0.5,
+    "model_score": 0.3047,
+    "style_score": 0.2217,
+    "label": "We think this was probably written by a person.",
+    "sent": "Peer influence could have affected Mr. Franklin\u2019s traits he\u2019s experien"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5,
+    "model_score": 0.7078,
+    "style_score": 0.2,
+    "label": "We couldn\u2019t tell from this sample. It may well have been written by a person, and this result isn\u2019t a judgment about your work.",
+    "sent": "Since Mr. Franklin did not receive enough attention from his mother, h"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5,
+    "model_score": 0.7028,
+    "style_score": 0.429,
+    "label": "We couldn\u2019t tell from this sample. It may well have been written by a person, and this result isn\u2019t a judgment about your work.",
+    "sent": "Gender differences in both social connectedness and aggression are inf"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5,
+    "model_score": 0.6518,
+    "style_score": 0.4283,
+    "label": "We couldn\u2019t tell from this sample. It may well have been written by a person, and this result isn\u2019t a judgment about your work.",
+    "sent": "Social connectedness affects gender differences through nature and nur"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5,
+    "model_score": 0.6864,
+    "style_score": 0.52,
+    "label": "We couldn\u2019t tell from this sample. It may well have been written by a person, and this result isn\u2019t a judgment about your work.",
+    "sent": "To reduce current gender differences in aggression, I would place chil"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5,
+    "model_score": 0.3407,
+    "style_score": 0.3775,
+    "label": "We couldn\u2019t tell from this sample. It may well have been written by a person, and this result isn\u2019t a judgment about your work.",
+    "sent": "The board member\u2019s proposal to use subliminal persuasion should be rej"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5,
+    "model_score": 0.7407,
+    "style_score": 0.5451,
+    "label": "We couldn\u2019t tell from this sample. It may well have been written by a person, and this result isn\u2019t a judgment about your work.",
+    "sent": "Anthony Greenwald performed an experiment where he randomly assigned s"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5,
+    "model_score": 0.5535,
+    "style_score": 0.3777,
+    "label": "We couldn\u2019t tell from this sample. It may well have been written by a person, and this result isn\u2019t a judgment about your work.",
+    "sent": "Based on the results of this study, the board member\u2019s plan should be "
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5,
+    "model_score": 0.7872,
+    "style_score": 0.4531,
+    "label": "We couldn\u2019t tell from this sample. It may well have been written by a person, and this result isn\u2019t a judgment about your work.",
+    "sent": "While the five human senses have individual functions, they are not to"
+  },
+  {
+    "status": 200,
+    "guess": "ai",
+    "confidence": 0.5,
+    "model_score": 0.9223,
+    "style_score": 0.7083,
+    "label": "We think this was probably written by AI.",
+    "sent": "The sun is bright. The day is nice. The sky is blue. The grass is gree"
+  },
+  {
+    "status": 200,
+    "guess": "ai",
+    "confidence": 0.5,
+    "model_score": 0.9634,
+    "style_score": 0.8542,
+    "label": "We think this was probably written by AI.",
+    "sent": "The sun is bright. The day is bright. The sky is bright. The grass is "
+  },
+  {
+    "status": 200,
+    "guess": "ai",
+    "confidence": 0.5,
+    "model_score": 0.9103,
+    "style_score": 0.7778,
+    "label": "We think this was probably written by AI.",
+    "sent": "People need food. People need water. People need rest. People need car"
+  },
+  {
+    "status": 200,
+    "guess": "ai",
+    "confidence": 0.5,
+    "model_score": 0.9514,
+    "style_score": 0.7147,
+    "label": "We think this was probably written by AI.",
+    "sent": "We can work together. We can learn together. We can grow together. We "
+  },
+  {
+    "status": 200,
+    "guess": "ai",
+    "confidence": 0.5,
+    "model_score": 0.9395,
+    "style_score": 0.8333,
+    "label": "We think this was probably written by AI.",
+    "sent": "The system is simple. The process is simple. The result is simple. The"
+  }
+]
+```
+
+**Criterion 3 - label coverage - Trial 1**
+
+```json
+[
+  {
+    "status": 200,
+    "guess": "human",
+    "confidence": 0.5,
+    "model_score": 0.3047,
+    "style_score": 0.2217,
+    "label": "We think this was probably written by a person.",
+    "sent": "Peer influence could have affected Mr. Franklin\u2019s traits he\u2019s experien"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5,
+    "model_score": 0.533,
+    "style_score": 0.2608,
+    "label": "We couldn\u2019t tell from this sample. It may well have been written by a person, and this result isn\u2019t a judgment about your work.",
+    "sent": "Mr. Franklin\u2019s complaints about his parents may be somewhat unfair and"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5,
+    "model_score": 0.7066,
+    "style_score": 0.5395,
+    "label": "We couldn\u2019t tell from this sample. It may well have been written by a person, and this result isn\u2019t a judgment about your work.",
+    "sent": "In today\u2019s rapidly evolving world, it is essential to recognize that s"
+  },
+  {
+    "status": 200,
+    "guess": "ai",
+    "confidence": 0.5,
+    "model_score": 0.9223,
+    "style_score": 0.7083,
+    "label": "We think this was probably written by AI.",
+    "sent": "The sun is bright. The day is nice. The sky is blue. The grass is gree"
+  },
+  {
+    "status": 200,
+    "guess": "ai",
+    "confidence": 0.5,
+    "model_score": 0.9634,
+    "style_score": 0.8542,
+    "label": "We think this was probably written by AI.",
+    "sent": "The sun is bright. The day is bright. The sky is bright. The grass is "
+  }
+]
+```
+
+**Criterion 4 — appeal responses (Trial 1), from `app.py::appeal`**
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "content_id": "f16481e0-f5e6-4ef9-8e75-0ab2a20a755e",
+  "message": "Your appeal has been recorded for review.",
+  "status": "under_review"
+}
+```
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "content_id": "dbfd4441-b69e-443e-a357-3769942301cf",
+  "message": "Your appeal has been recorded for review.",
+  "status": "under_review"
+}
+```
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "content_id": "158e15ba-f0da-41da-b594-470ee7c140b8",
+  "message": "Your appeal has been recorded for review.",
+  "status": "under_review"
+}
+```
+
+**Criterion 5 - invalid and oversized inputs - Trial 1**
+
+```json
+[
+  {
+    "status": null,
+    "error": "JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
+    "sent": "{\"creator_id\": \"eval_missing_text\"}"
+  },
+  {
+    "status": null,
+    "error": "JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
+    "sent": "(empty text)"
+  },
+  {
+    "status": null,
+    "error": "JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
+    "sent": "{\"text\": 12345, \"creator_id\": \"eval_non_string_text\"}"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5,
+    "model_score": 0.9976,
+    "style_score": 0.25,
+    "label": "We couldn\u2019t tell from this sample. It may well have been written by a person, and this result isn\u2019t a judgment about your work.",
+    "sent": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  }
+]
 ```
 
 **Diagnoses**
