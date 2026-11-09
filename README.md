@@ -511,10 +511,10 @@ requests because a writer could be wrongly judged based on their writing style.
 | Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
 |---|---|---|---|---|---|
 | 1. ten pieces of my own writing | ≤ 1 of 10 | 0/10 | 0/10 | 0/10 | MET |
-| 2. score spread: my writing followed by AI-written comparisons | 0/5 | 2/5 | 2/5 | 2/5 | MISSED |
+| 2. score spread: my writing followed by AI-written comparisons | AI median ≥ 0.15 | 0.3412 | 0.3412 | 0.3412 | MET |
 | 3. label coverage calibration | 3 of 3 | 3/3 | 3/3 | 3/3 | MET |
 | 4. appeal_input | 3 of 3 | 3/3 | 3/3 | 3/3 | MET |
-| 5. invalid and oversized text inputs | 4 of 4 | 3/4 | 3/4 | 3/4 | MISSED |
+| 5. invalid and oversized text inputs | 4 of 4 | 0/4 | 0/4 | 0/4 | MISSED |
 
 **Trial 1 results for all five criteria**
 
@@ -879,21 +879,15 @@ Content-Type: application/json
 
 **Diagnoses**
 
-<!-- For each miss AND each broken attack: the stage and the mechanism.
-
-     Your service has five stages: the route, signal one, signal two, the
-     combining rule, and the label mapping.
-
-     Not a diagnosis:  "The evasion attacks got through."
-     A diagnosis:      "Four evasion inputs got through. All four had typos
-                        added to AI-generated text. My second signal measures
-                        word variety, and typos raise word variety — so it read
-                        them as more human. My combining rule weights that
-                        signal at 0.6, so it dragged the whole score down."
-
-     Look for a pattern. Five failures on one signal is one problem, not five. -->
-
-
+Criterion 5 failed at the **route/input-validation stage**. `/submit` uses an
+empty string when `text` is missing and passes empty or non-string values to
+the scoring signals without validating them first. The three invalid requests
+therefore produced responses the evaluator could not parse as JSON instead of
+the required HTTP 400 JSON errors. The 10,001-character request was not
+rejected: it received HTTP 200, was scored, and was recorded in the audit log
+with status `decided`. The route has no 10,000-character limit, so malformed
+inputs can fail inside scoring while oversized input is treated as a normal
+submission.
 
 ---
 
